@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -52,7 +51,7 @@
  *
  *	from: @(#)svc.h 1.20 88/02/08 SMI 
  *	from: @(#)svc.h	2.2 88/07/29 4.0 RPCSRC
- *	$Id: svc.h,v 1.2 1999/10/14 21:56:54 wsanchez Exp $
+ *	$Id: svc.h,v 1.4 2004/11/25 19:41:19 emoy Exp $
  */
 
 /*
@@ -98,14 +97,24 @@ enum xprt_stat {
  */
 typedef struct {
 	int		xp_sock;
-	u_short		xp_port;	 /* associated port number */
+	unsigned short		xp_port;	 /* associated port number */
 	struct xp_ops {
-	    bool_t	(*xp_recv)();	 /* receive incomming requests */
-	    enum xprt_stat (*xp_stat)(); /* get transport status */
-	    bool_t	(*xp_getargs)(); /* get arguments */
-	    bool_t	(*xp_reply)();	 /* send reply */
-	    bool_t	(*xp_freeargs)();/* free mem allocated for args */
-	    void	(*xp_destroy)(); /* destroy this struct */
+#ifdef __cplusplus
+	    bool_t	(*xp_recv)(...);	 /* receive incomming requests */
+	    enum xprt_stat (*xp_stat)(...); /* get transport status */
+	    bool_t	(*xp_getargs)(...); /* get arguments */
+	    bool_t	(*xp_reply)(...);	 /* send reply */
+	    bool_t	(*xp_freeargs)(...);/* free mem allocated for args */
+	    void	(*xp_destroy)(...); /* destroy this struct */
+#else
+	/* DO NOT REMOVE THE COMMENTED OUT ...: fixincludes needs to see them */
+	    bool_t	(*xp_recv)(/*...*/);	 /* receive incomming requests */
+	    enum xprt_stat (*xp_stat)(/*...*/); /* get transport status */
+	    bool_t	(*xp_getargs)(/*...*/); /* get arguments */
+	    bool_t	(*xp_reply)(/*...*/);	 /* send reply */
+	    bool_t	(*xp_freeargs)(/*...*/);/* free mem allocated for args */
+	    void	(*xp_destroy)(/*...*/); /* destroy this struct */
+#endif
 	} *xp_ops;
 	int		xp_addrlen;	 /* length of remote address */
 	struct sockaddr_in xp_raddr;	 /* remote address */
@@ -162,9 +171,9 @@ typedef struct {
  * Service request
  */
 struct svc_req {
-	u_long		rq_prog;	/* service program number */
-	u_long		rq_vers;	/* service protocol version */
-	u_long		rq_proc;	/* the desired procedure */
+	unsigned long		rq_prog;	/* service program number */
+	unsigned long		rq_vers;	/* service protocol version */
+	unsigned long		rq_proc;	/* the desired procedure */
 	struct opaque_auth rq_cred;	/* raw creds from the wire */
 	caddr_t		rq_clntcred;	/* read only cooked cred */
 	SVCXPRT	*rq_xprt;		/* associated transport */
@@ -176,24 +185,24 @@ struct svc_req {
  *
  * svc_register(xprt, prog, vers, dispatch, protocol)
  *	SVCXPRT *xprt;
- *	u_long prog;
- *	u_long vers;
- *	void (*dispatch)();
+ *	unsigned long prog;
+ *	unsigned long vers;
+ *	void (*dispatch)(...); // fixincludes needs the ..., even in a comment
  *	int protocol;  like TCP or UDP, zero means do not register 
  */
 __BEGIN_DECLS
-extern bool_t	svc_register __P((SVCXPRT *, u_long, u_long, void (*)(), int));
+extern bool_t	svc_register __P((SVCXPRT *, unsigned long, unsigned long, void (*)(), int));
 __END_DECLS
 
 /*
  * Service un-registration
  *
  * svc_unregister(prog, vers)
- *	u_long prog;
- *	u_long vers;
+ *	unsigned long prog;
+ *	unsigned long vers;
  */
 __BEGIN_DECLS
-extern void	svc_unregister __P((u_long, u_long));
+extern void	svc_unregister __P((unsigned long, unsigned long));
 __END_DECLS
 
 /*
@@ -250,7 +259,7 @@ extern bool_t	svc_sendreply	__P((SVCXPRT *, xdrproc_t, char *));
 extern void	svcerr_decode	__P((SVCXPRT *));
 extern void	svcerr_weakauth	__P((SVCXPRT *));
 extern void	svcerr_noproc	__P((SVCXPRT *));
-extern void	svcerr_progvers	__P((SVCXPRT *, u_long, u_long));
+extern void	svcerr_progvers	__P((SVCXPRT *, unsigned long, unsigned long));
 extern void	svcerr_auth	__P((SVCXPRT *, enum auth_stat));
 extern void	svcerr_noprog	__P((SVCXPRT *));
 extern void	svcerr_systemerr __P((SVCXPRT *));
@@ -312,7 +321,7 @@ __END_DECLS
  */
 __BEGIN_DECLS
 extern SVCXPRT *svcudp_create __P((int));
-extern SVCXPRT *svcudp_bufcreate __P((int, u_int, u_int));
+extern SVCXPRT *svcudp_bufcreate __P((int, unsigned int, unsigned int));
 __END_DECLS
 
 
@@ -320,7 +329,7 @@ __END_DECLS
  * Tcp based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svctcp_create __P((int, u_int, u_int));
+extern SVCXPRT *svctcp_create __P((int, unsigned int, unsigned int));
 __END_DECLS
 
 #endif /* !_RPC_SVC_H */

@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -55,7 +54,7 @@ static const char ethers[] = "/etc/ethers";
  * Returns zero if successful, non-zero otherwise.
  */
 int ether_line(s, e, hostname)
-	char *s;		/* the string to be parsed */
+	const char *s;		/* the string to be parsed */
 	struct ether_addr *e;	/* ethernet address struct to be filled in */
 	char *hostname;		/* hosts name to be set */
 {
@@ -98,7 +97,7 @@ ether_ntoa(e)
  */
 struct ether_addr *
 ether_aton(s)
-	char *s;
+	const char *s;
 {
 	static struct ether_addr *ep;
 	register int i;
@@ -122,9 +121,8 @@ ether_aton(s)
  * Given a host's name, this routine returns its 48 bit ethernet address.
  * Returns zero if successful, non-zero otherwise.
  */
-/* XXX need to override in netinfo */
-int ether_hostton(host, e)
-	char *host;		/* function input */
+int _old_ether_hostton(host, e)
+	const char *host;		/* function input */
 	struct ether_addr *e;	/* function output */
 {
 	char currenthost[256];
@@ -157,10 +155,9 @@ int ether_hostton(host, e)
  * Given a 48 bit ethernet address, this routine return its host name.
  * Returns zero if successful, non-zero otherwise.
  */
-/* XXX need to override in netinfo */
-int ether_ntohost(host, e)
+int _old_ether_ntohost(host, e)
 	char *host;		/* function output */
-	struct ether_addr *e;	/* function input */
+	const struct ether_addr *e;	/* function input */
 {
 	struct ether_addr currente;
 	char buf[512];

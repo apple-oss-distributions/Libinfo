@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -30,7 +29,7 @@
 #include "sys_interfaces.h"
 
 __private_extern__ interface_list_t *
-sys_interfaces(void)
+_libinfo_ni_sys_interfaces(void)
 {
 	interface_list_t *my_interfaces = NULL;
 	interface_t *iface;
@@ -74,7 +73,7 @@ sys_interfaces(void)
 }
 
 __private_extern__  void
-sys_interfaces_release(interface_list_t *l)
+_libinfo_ni_sys_interfaces_release(interface_list_t *l)
 {
 	int i;
 
@@ -90,7 +89,7 @@ sys_interfaces_release(interface_list_t *l)
 }
 
 __private_extern__ int
-sys_is_my_address(interface_list_t *l, struct in_addr *a)
+_libinfo_ni_sys_is_my_address(interface_list_t *l, struct in_addr *a)
 {
 	int i;
 
@@ -104,7 +103,7 @@ sys_is_my_address(interface_list_t *l, struct in_addr *a)
 }
 
 __private_extern__ int
-sys_is_my_network(interface_list_t *l, struct in_addr *a)
+_libinfo_ni_sys_is_my_network(interface_list_t *l, struct in_addr *a)
 {
 	int i;
 

@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -52,7 +51,7 @@
  *
  *	from: @(#)auth.h 1.17 88/02/08 SMI
  *	from: @(#)auth.h	2.3 88/08/07 4.0 RPCSRC
- *	$Id: auth.h,v 1.2 1999/10/14 21:56:52 wsanchez Exp $
+ *	$Id: auth.h,v 1.4 2004/11/25 19:41:19 emoy Exp $
  */
 
 /*
@@ -92,7 +91,7 @@ enum auth_stat {
 	AUTH_FAILED=7			/* some unknown reason */
 };
 
-typedef u_long u_int32;	/* 32-bit unsigned integers */
+typedef unsigned long u_int32;	/* 32-bit unsigned integers */
 
 union des_block {
 	struct {
@@ -112,7 +111,7 @@ __END_DECLS
 struct opaque_auth {
 	enum_t	oa_flavor;		/* flavor of auth */
 	caddr_t	oa_base;		/* address of more auth stuff */
-	u_int	oa_length;		/* not to exceed MAX_AUTH_BYTES */
+	unsigned int	oa_length;		/* not to exceed MAX_AUTH_BYTES */
 };
 
 
@@ -124,11 +123,20 @@ typedef struct {
 	struct	opaque_auth	ah_verf;
 	union	des_block	ah_key;
 	struct auth_ops {
-		void	(*ah_nextverf)();
-		int	(*ah_marshal)();	/* nextverf & serialize */
-		int	(*ah_validate)();	/* validate varifier */
-		int	(*ah_refresh)();	/* refresh credentials */
-		void	(*ah_destroy)();	/* destroy this structure */
+#ifdef __cplusplus
+		void	(*ah_nextverf)(...);
+		int	(*ah_marshal)(...);	/* nextverf & serialize */
+		int	(*ah_validate)(...);	/* validate varifier */
+		int	(*ah_refresh)(...);	/* refresh credentials */
+		void	(*ah_destroy)(...);	/* destroy this structure */
+#else
+	/* DO NOT REMOVE THE COMMENTED OUT ...: fixincludes needs to see them */
+		void	(*ah_nextverf)(/*...*/);
+		int	(*ah_marshal)(/*...*/);	/* nextverf & serialize */
+		int	(*ah_validate)(/*...*/);	/* validate varifier */
+		int	(*ah_refresh)(/*...*/);	/* refresh credentials */
+		void	(*ah_destroy)(/*...*/);	/* destroy this structure */
+#endif
 	} *ah_ops;
 	caddr_t ah_private;
 } AUTH;
@@ -188,7 +196,7 @@ __BEGIN_DECLS
 extern AUTH *authunix_create		__P((char *, int, int, int, int *));
 extern AUTH *authunix_create_default	__P((void));
 extern AUTH *authnone_create		__P((void));
-extern AUTH *authdes_create		__P((char *, u_int,
+extern AUTH *authdes_create		__P((char *, unsigned int,
 					     struct sockaddr_in *,
 					     des_block *));
 __END_DECLS

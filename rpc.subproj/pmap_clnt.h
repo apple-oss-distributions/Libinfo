@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -52,7 +51,7 @@
  *
  *	from: @(#)pmap_clnt.h 1.11 88/02/08 SMI 
  *	from: @(#)pmap_clnt.h	2.1 88/07/29 4.0 RPCSRC
- *	$Id: pmap_clnt.h,v 1.2 1999/10/14 21:56:53 wsanchez Exp $
+ *	$Id: pmap_clnt.h,v 1.3 2004/10/28 21:58:22 emoy Exp $
  */
 
 /*
@@ -89,20 +88,20 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern bool_t		pmap_set	__P((u_long, u_long, int, int));
-extern bool_t		pmap_unset	__P((u_long, u_long));
+extern bool_t		pmap_set	__P((unsigned long, unsigned long, int, int));
+extern bool_t		pmap_unset	__P((unsigned long, unsigned long));
 extern struct pmaplist	*pmap_getmaps	__P((struct sockaddr_in *));
 extern enum clnt_stat	pmap_rmtcall	__P((struct sockaddr_in *,
-					     u_long, u_long, u_long,
+					     unsigned long, unsigned long, unsigned long,
 					     xdrproc_t, caddr_t,
 					     xdrproc_t, caddr_t,
-					     struct timeval, u_long *));
-extern enum clnt_stat	clnt_broadcast	__P((u_long, u_long, u_long,
+					     struct timeval, unsigned long *));
+extern enum clnt_stat	clnt_broadcast	__P((unsigned long, unsigned long, unsigned long,
 					     xdrproc_t, char *,
 					     xdrproc_t, char *,
 					     bool_t (*)()));
-extern u_short		pmap_getport	__P((struct sockaddr_in *,
-					     u_long, u_long, u_int));
+extern unsigned short		pmap_getport	__P((struct sockaddr_in *,
+					     unsigned long, unsigned long, unsigned int));
 __END_DECLS
 
 #endif /* !_RPC_PMAPCLNT_H */

@@ -2,24 +2,21 @@
  * Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
- * 
- * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ *
+ * The contents of this file constitute Original Code as defined in and
+ * are subject to the Apple Public Source License Version 1.1 (the
+* "License").  You may not use this file except in compliance with the
+ * License.  Please obtain a copy of the License at
+ * http://www.apple.com/publicsource and read it before using this file.
+ *
+ * This Original Code and all software distributed under the License are
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
- * 
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ *
  * @APPLE_LICENSE_HEADER_END@
  */
 
@@ -33,6 +30,8 @@
 #include <sys/cdefs.h>
 
 #include <netinet/in.h>
+
+#include <AvailabilityMacros.h>
 
 __BEGIN_DECLS
 
@@ -112,7 +111,7 @@ dns_service_discovery_ref DNSServiceRegistrationCreate
     const char 		*txtRecord,
     DNSServiceRegistrationReply callBack,
     void		*context
-);
+) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /***************************************************************************/
 /*   DNS Domain Enumeration   */
@@ -154,7 +153,7 @@ dns_service_discovery_ref DNSServiceDomainEnumerationCreate
     int 		registrationDomains,
     DNSServiceDomainEnumerationReply	callBack,
     void		*context
-);
+) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /***************************************************************************/
 /*   DNS Service Browser   */
@@ -189,7 +188,7 @@ dns_service_discovery_ref DNSServiceBrowserCreate
     const char 		*domain,
     DNSServiceBrowserReply	callBack,
     void		*context
-);
+) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /***************************************************************************/
 /* Resolver requests */
@@ -222,7 +221,7 @@ dns_service_discovery_ref DNSServiceResolverResolve
     const char 		*domain,
     DNSServiceResolverReply callBack,
     void		*context
-);
+) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /***************************************************************************/
 /* Mach port accessor and deallocation */
@@ -237,7 +236,7 @@ dns_service_discovery_ref DNSServiceResolverResolve
         specified or some other error occurred which prevented the
         resolution from being started.
 */
-mach_port_t DNSServiceDiscoveryMachPort(dns_service_discovery_ref dnsServiceDiscovery);
+mach_port_t DNSServiceDiscoveryMachPort(dns_service_discovery_ref dnsServiceDiscovery) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /*!
     @function DNSServiceDiscoveryDeallocate
@@ -245,7 +244,7 @@ mach_port_t DNSServiceDiscoveryMachPort(dns_service_discovery_ref dnsServiceDisc
     @param dnsServiceDiscovery A dns_service_discovery_ref as returned from a creation or enumeration call
     @result void
 */
-void DNSServiceDiscoveryDeallocate(dns_service_discovery_ref dnsServiceDiscovery);
+void DNSServiceDiscoveryDeallocate(dns_service_discovery_ref dnsServiceDiscovery) AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /***************************************************************************/
 /* Registration updating */
@@ -261,7 +260,8 @@ void DNSServiceDiscoveryDeallocate(dns_service_discovery_ref dnsServiceDiscovery
     @param ttl time to live for the added record.
     @result DNSRecordReference An opaque reference that can be passed to the update and remove record calls.  If an error occurs, this value will be zero or negative
 */
-DNSRecordReference DNSServiceRegistrationAddRecord(dns_service_discovery_ref dnsServiceDiscovery, uint16_t rrtype, uint16_t rdlen, const char *rdata, uint32_t ttl);
+DNSRecordReference DNSServiceRegistrationAddRecord(dns_service_discovery_ref dnsServiceDiscovery, uint16_t rrtype, uint16_t rdlen, const char *rdata, uint32_t ttl)
+AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /*!
     @function DNSServiceRegistrationUpdateRecord
@@ -273,7 +273,8 @@ DNSRecordReference DNSServiceRegistrationAddRecord(dns_service_discovery_ref dns
     @param ttl time to live for the updated record.
     @result DNSServiceRegistrationReplyErrorType If an error occurs, this value will be non zero
 */
-DNSServiceRegistrationReplyErrorType DNSServiceRegistrationUpdateRecord(dns_service_discovery_ref ref, DNSRecordReference reference, uint16_t rdlen, const char *rdata, uint32_t ttl);
+DNSServiceRegistrationReplyErrorType DNSServiceRegistrationUpdateRecord(dns_service_discovery_ref ref, DNSRecordReference reference, uint16_t rdlen, const char *rdata, uint32_t ttl)
+AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 /*!
     @function DNSServiceRegistrationRemoveRecord
@@ -282,7 +283,8 @@ DNSServiceRegistrationReplyErrorType DNSServiceRegistrationUpdateRecord(dns_serv
     @param dnsRecordReference A dnsRecordReference as returned from a DNSServiceRegistrationAddRecord call
     @result DNSServiceRegistrationReplyErrorType If an error occurs, this value will be non zero
 */
-DNSServiceRegistrationReplyErrorType DNSServiceRegistrationRemoveRecord(dns_service_discovery_ref ref, DNSRecordReference reference);
+DNSServiceRegistrationReplyErrorType DNSServiceRegistrationRemoveRecord(dns_service_discovery_ref ref, DNSRecordReference reference)
+AVAILABLE_MAC_OS_X_VERSION_10_2_AND_LATER_BUT_DEPRECATED;
 
 
 __END_DECLS

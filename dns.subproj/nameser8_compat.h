@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -79,7 +78,7 @@
 
 /*
  *      @(#)nameser.h	8.1 (Berkeley) 6/2/93
- *	$Id: nameser8_compat.h,v 1.2 2003/02/18 17:29:24 majka Exp $
+ *	$Id: nameser8_compat.h,v 1.3 2004/10/28 21:58:13 emoy Exp $
  */
 
 #ifndef _NAMESER_H_
@@ -321,8 +320,8 @@ struct rrec {
 	char		*r_data;		/* pointer to data */
 };
 
-extern	u_int16_t	_getshort __P((const u_char *));
-extern	u_int32_t	_getlong __P((const u_char *));
+extern	u_int16_t	_getshort __P((const unsigned char *));
+extern	u_int32_t	_getlong __P((const unsigned char *));
 
 /*
  * Inline versions of get/put short/long.  Pointer is advanced.
@@ -331,7 +330,7 @@ extern	u_int32_t	_getlong __P((const u_char *));
  * portable or it can be elegant but rarely both.
  */
 #define GETSHORT(s, cp) { \
-	register u_char *t_cp = (u_char *)(cp); \
+	register unsigned char *t_cp = (unsigned char *)(cp); \
 	(s) = ((u_int16_t)t_cp[0] << 8) \
 	    | ((u_int16_t)t_cp[1]) \
 	    ; \
@@ -339,7 +338,7 @@ extern	u_int32_t	_getlong __P((const u_char *));
 }
 
 #define GETLONG(l, cp) { \
-	register u_char *t_cp = (u_char *)(cp); \
+	register unsigned char *t_cp = (unsigned char *)(cp); \
 	(l) = ((u_int32_t)t_cp[0] << 24) \
 	    | ((u_int32_t)t_cp[1] << 16) \
 	    | ((u_int32_t)t_cp[2] << 8) \
@@ -350,7 +349,7 @@ extern	u_int32_t	_getlong __P((const u_char *));
 
 #define PUTSHORT(s, cp) { \
 	register u_int16_t t_s = (u_int16_t)(s); \
-	register u_char *t_cp = (u_char *)(cp); \
+	register unsigned char *t_cp = (unsigned char *)(cp); \
 	*t_cp++ = t_s >> 8; \
 	*t_cp   = t_s; \
 	(cp) += INT16SZ; \
@@ -358,7 +357,7 @@ extern	u_int32_t	_getlong __P((const u_char *));
 
 #define PUTLONG(l, cp) { \
 	register u_int32_t t_l = (u_int32_t)(l); \
-	register u_char *t_cp = (u_char *)(cp); \
+	register unsigned char *t_cp = (unsigned char *)(cp); \
 	*t_cp++ = t_l >> 24; \
 	*t_cp++ = t_l >> 16; \
 	*t_cp++ = t_l >> 8; \

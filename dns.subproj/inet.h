@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -79,7 +78,7 @@
 
 /*
  *	@(#)inet.h	8.1 (Berkeley) 6/2/93
- *	$Id: inet.h,v 1.4 2003/05/20 23:00:27 majka Exp $
+ *	$Id: inet.h,v 1.7 2004/10/28 21:58:13 emoy Exp $
  */
 
 #ifndef _INET_H_
@@ -87,6 +86,10 @@
 
 /* External definitions for functions in inet(3) */
 
+#include <stdint.h>		/* uint32_t uint16_t */
+#include <machine/endian.h>	/* htonl() and family if !_POSIX_C_SOURCE */
+#include <sys/_endian.h>	/* htonl() and family if _POSIX_C_SOURCE */
+#include <netinet/in.h>		/* in_addr */
 #include <sys/param.h>
 #if (!defined(BSD)) || (BSD < 199306)
 # include <sys/bitypes.h>
@@ -97,22 +100,24 @@
 
 __BEGIN_DECLS
 
+in_addr_t	 inet_addr(const char *);
+char		*inet_ntoa(struct in_addr);
+const char	*inet_ntop(int, const void *, char *, size_t);
+int		 inet_pton(int, const char *, void *);
+#ifndef _POSIX_C_SOURCE
 int		 ascii2addr(int, const char *, void *);
 char		*addr2ascii(int, const void *, int, char *);
-in_addr_t	 inet_addr(const char *);
 int		 inet_aton(const char *, struct in_addr *);
 in_addr_t	 inet_lnaof(struct in_addr);
 struct in_addr	 inet_makeaddr(in_addr_t, in_addr_t);
 in_addr_t	 inet_netof(struct in_addr);
 in_addr_t	 inet_network(const char *);
-char		*inet_ntoa(struct in_addr);
-int		 inet_pton(int, const char *, void *);
-const char	*inet_ntop(int, const void *, char *, size_t);
 char		*inet_net_ntop(int, const void *, int, char *, size_t);
 int		 inet_net_pton(int, const char *, void *, size_t);
 char	 	*inet_neta(in_addr_t, char *, size_t);
-u_int	 inet_nsap_addr(const char *, u_char *, int maxlen);
-char	*inet_nsap_ntoa(int, const u_char *, char *ascii);
+unsigned int	 inet_nsap_addr(const char *, unsigned char *, int maxlen);
+char	*inet_nsap_ntoa(int, const unsigned char *, char *ascii);
+#endif /* _POSIX_C_SOURCE */
 
 __END_DECLS
 

@@ -3,22 +3,21 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
- * This file contains Original Code and/or Modifications of Original Code
- * as defined in and that are subject to the Apple Public Source License
- * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
+ * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
+ * Reserved.  This file contains Original Code and/or Modifications of
+ * Original Code as defined in and that are subject to the Apple Public
+ * Source License Version 1.1 (the "License").  You may not use this file
+ * except in compliance with the License.  Please obtain a copy of the
+ * License at http://www.apple.com/publicsource and read it before using
+ * this file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
- * Please see the License for the specific language governing rights and
- * limitations under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
+ * License for the specific language governing rights and limitations
+ * under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -52,7 +51,7 @@
  *
  *	from: @(#)pmap_prot.h 1.14 88/02/08 SMI 
  *	from: @(#)pmap_prot.h	2.1 88/07/29 4.0 RPCSRC
- *	$Id: pmap_prot.h,v 1.2 1999/10/14 21:56:53 wsanchez Exp $
+ *	$Id: pmap_prot.h,v 1.3 2004/10/28 21:58:22 emoy Exp $
  */
 
 /*
@@ -96,17 +95,17 @@
 #define _RPC_PMAPPROT_H
 #include <sys/cdefs.h>
 
-#define PMAPPORT		((u_short)111)
-#define PMAPPROG		((u_long)100000)
-#define PMAPVERS		((u_long)2)
-#define PMAPVERS_PROTO		((u_long)2)
-#define PMAPVERS_ORIG		((u_long)1)
-#define PMAPPROC_NULL		((u_long)0)
-#define PMAPPROC_SET		((u_long)1)
-#define PMAPPROC_UNSET		((u_long)2)
-#define PMAPPROC_GETPORT	((u_long)3)
-#define PMAPPROC_DUMP		((u_long)4)
-#define PMAPPROC_CALLIT		((u_long)5)
+#define PMAPPORT		((unsigned short)111)
+#define PMAPPROG		((unsigned long)100000)
+#define PMAPVERS		((unsigned long)2)
+#define PMAPVERS_PROTO		((unsigned long)2)
+#define PMAPVERS_ORIG		((unsigned long)1)
+#define PMAPPROC_NULL		((unsigned long)0)
+#define PMAPPROC_SET		((unsigned long)1)
+#define PMAPPROC_UNSET		((unsigned long)2)
+#define PMAPPROC_GETPORT	((unsigned long)3)
+#define PMAPPROC_DUMP		((unsigned long)4)
+#define PMAPPROC_CALLIT		((unsigned long)5)
 
 struct pmap {
 	long unsigned pm_prog;
