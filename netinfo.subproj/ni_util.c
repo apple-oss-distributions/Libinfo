@@ -486,7 +486,11 @@ ni_search(void *handle, ni_id *dir, ni_name name, ni_name expr, int flags, ni_en
 	cexp = (regex_t *)malloc(sizeof(regex_t));
 	memset(cexp, 0, sizeof(regex_t));
 	i = regcomp(cexp, expr, flags);
-	if (i != 0) return NI_FAILED;
+	if (i != 0)
+	{
+		free(cexp);
+		return NI_FAILED;
+	}
 
 	for (i = 0; i < el.ni_entrylist_len; i++)
 	{
@@ -494,11 +498,10 @@ ni_search(void *handle, ni_id *dir, ni_name name, ni_name expr, int flags, ni_en
 
 		nl = el.ni_entrylist_val[i].names;
 
+		found = 0;
 		for (j = 0; j < nl->ni_namelist_len; j++)
 		{
-			found = 0;
 			if (regexec(cexp, nl->ni_namelist_val[j], 0, NULL, 0) != 0) continue;
-
 			found = 1;
 			break;
 		}
@@ -521,6 +524,7 @@ ni_search(void *handle, ni_id *dir, ni_name name, ni_name expr, int flags, ni_en
 	}
 	
 	ni_entrylist_free(&el);
+	regfree(cexp);
 	free(cexp);
 
 	return NI_OK;
