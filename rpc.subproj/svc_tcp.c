@@ -3,21 +3,22 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
- * Reserved.  This file contains Original Code and/or Modifications of
- * Original Code as defined in and that are subject to the Apple Public
- * Source License Version 1.1 (the "License").  You may not use this file
- * except in compliance with the License.  Please obtain a copy of the
- * License at http://www.apple.com/publicsource and read it before using
- * this file.
+ * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+ * 
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this
+ * file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
- * License for the specific language governing rights and limitations
- * under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -53,7 +54,7 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)svc_tcp.c 1.21 87/08/11 Copyr 1984 Sun Micro";*/
 /*static char *sccsid = "from: @(#)svc_tcp.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$Id: svc_tcp.c,v 1.3 2002/02/19 20:36:25 epeyton Exp $";
+static char *rcsid = "$Id: svc_tcp.c,v 1.5 2003/06/23 17:24:59 majka Exp $";
 #endif
 
 /*
@@ -73,6 +74,8 @@ static char *rcsid = "$Id: svc_tcp.c,v 1.3 2002/02/19 20:36:25 epeyton Exp $";
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <errno.h>
+
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 extern int		bindresvport();
 
@@ -316,6 +319,8 @@ svctcp_destroy(xprt)
  */
 static struct timeval wait_per_try = { 35, 0 };
 
+extern int svc_maxfd;
+
 /*
  * reads data from the tcp conection.
  * any error is fatal and the connection is closed.
@@ -328,27 +333,34 @@ readtcp(xprt, buf, len)
 	register int len;
 {
 	register int sock = xprt->xp_sock;
-	fd_set mask;
 	fd_set readfds;
+	bool_t ready = FALSE;
 
-	FD_ZERO(&mask);
-	FD_SET(sock, &mask);
-	do {
-		readfds = mask;
-		if (select(sock+1, &readfds, NULL, NULL, 
-			   &wait_per_try) <= 0) {
-			if (errno == EINTR) {
-				continue;
-			}
+	do
+	{
+		FD_COPY(&svc_fdset, &readfds);
+		FD_SET(sock, &readfds);
+		if (select(max(svc_maxfd, sock) + 1, &readfds, NULL, NULL, &wait_per_try) <= 0)
+		{
+			if (errno == EINTR) continue;
 			goto fatal_err;
 		}
-	} while (!FD_ISSET(sock, &readfds));
-	if ((len = read(sock, buf, len)) > 0) {
-		return (len);
-	}
+		else if (FD_ISSET(sock, &readfds))
+		{
+			ready = TRUE;
+		}
+		else
+		{
+			svc_getreqset(&readfds);
+		}
+
+	} while (!ready);
+
+	if ((len = read(sock, buf, len)) > 0) return len;
+
 fatal_err:
 	((struct tcp_conn *)(xprt->xp_p1))->strm_stat = XPRT_DIED;
-	return (-1);
+	return -1;
 }
 
 /*

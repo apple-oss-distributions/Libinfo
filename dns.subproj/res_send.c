@@ -3,21 +3,22 @@
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
- * Reserved.  This file contains Original Code and/or Modifications of
- * Original Code as defined in and that are subject to the Apple Public
- * Source License Version 1.1 (the "License").  You may not use this file
- * except in compliance with the License.  Please obtain a copy of the
- * License at http://www.apple.com/publicsource and read it before using
- * this file.
+ * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+ * 
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this
+ * file.
  * 
  * The Original Code and all software distributed under the License are
- * distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+ * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE OR NON- INFRINGEMENT.  Please see the
- * License for the specific language governing rights and limitations
- * under the License.
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
@@ -78,7 +79,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)res_send.c	8.1 (Berkeley) 6/4/93";
-static char rcsid[] = "$Id: res_send.c,v 1.2 1999/10/14 21:56:45 wsanchez Exp $";
+static char rcsid[] = "$Id: res_send.c,v 1.6 2003/02/18 17:29:25 majka Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 	/* change this to "0"
@@ -97,13 +98,15 @@ static char rcsid[] = "$Id: res_send.c,v 1.2 1999/10/14 21:56:45 wsanchez Exp $"
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
-#include <arpa/nameser.h>
+#include <arpa/nameser8_compat.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <net/if.h>
 
 #include <stdio.h>
 #include <netdb.h>
 #include <errno.h>
-#include <resolv.h>
+#include <resolv8_compat.h>
 #if defined(BSD) && (BSD >= 199306)
 # include <stdlib.h>
 # include <string.h>
@@ -309,6 +312,67 @@ res_queriesmatch(buf1, eom1, buf2, eom2)
 	return (1);
 }
 
+/* Returns whether a dns encoded name should be sent to multicast or not */
+static int dns_is_local_name(const u_int8_t *name)
+{
+	const u_int8_t *d0 = NULL;		// Top-Level Domain
+	const u_int8_t *d1 = NULL;		// Second-Level Domain
+	const u_int8_t *d2 = NULL;		// etc.
+	const u_int8_t *d3 = NULL;
+
+	if (name == NULL) return 0;
+
+	while (*name)
+	{
+		d3 = d2;
+		d2 = d1;
+		d1 = d0;
+		d0 = name;
+		name += 1 + *name;
+	}
+
+	// "local" domains need to be resolved with multicast
+	// "local."
+	if (d0[0] == 5 && strncasecmp((char *)d0+1, "local", 5) == 0) return 1;
+	
+	// "local.arpa."
+	if (d1 && d1[0] == 5 && strncasecmp((char *)d1+1, "local", 5) == 0 &&
+		d0[0] == 4 && strncasecmp((char *)d0+1, "arpa",  4) == 0) return 1;
+	
+	// "local.int."
+	if (d1 && d1[0] == 5 && strncasecmp((char *)d1+1, "local", 5) == 0 &&
+		d0[0] == 3 && strncasecmp((char *)d0+1, "int",   3) == 0) return 1;
+
+	// The network 169.254/16 is defined to be link-local,
+	// so lookups in 254.169.in-addr.arpa. also need to be resolved with local multicast
+	if (d3 && d3[0] == 3 && strncasecmp((char *)d3+1, "254",     3) == 0 &&
+		d2 && d2[0] == 3 && strncasecmp((char *)d2+1, "169",     3) == 0 &&
+		d1 && d1[0] == 7 && strncasecmp((char *)d1+1, "in-addr", 7) == 0 &&
+		d0[0] == 4 && strncasecmp((char *)d0+1, "arpa",    4) == 0) return 1;
+
+	return 0;
+}
+
+#define DNS_LOCAL_DOMAIN_SERVICE_PORT	5353
+#define DNS_HEADER_SIZE 12
+
+#if BYTE_ORDER == BIG_ENDIAN
+#define my_htons(x)	(x)
+#define my_htonl(x)	(x)
+#else
+#define my_htons(x)	((((u_int16_t)x) >> 8) | (((u_int16_t)x) << 8))
+#define	my_htonl(x)	(((x) >> 24) | (((x) & 0x00FF0000) >> 16) | \
+					 (((x) & 0x0000FF00) << 16) | ((x) << 24))
+#endif
+
+static const struct sockaddr_in mDNS_addr =
+{
+	sizeof(mDNS_addr),
+	AF_INET,
+	my_htons(DNS_LOCAL_DOMAIN_SERVICE_PORT),
+	{my_htonl(0xE00000FB)}	/* 224.0.0.251 */
+};
+
 int
 res_send(buf, buflen, ans, anssiz)
 	const u_char *buf;
@@ -320,7 +384,8 @@ res_send(buf, buflen, ans, anssiz)
 	HEADER *anhp = (HEADER *) ans;
 	int gotsomewhere, connreset, terrno, try, v_circuit, resplen, ns;
 	register int n;
-	u_int badns;	/* XXX NSMAX can't exceed #/bits in this var */
+	u_int badns;	/* XXX NSMAX can't exceed #/bits in this var */	
+	int multicast;
 
 	if ((_res.options & RES_INIT) == 0 && res_init() == -1) {
 		/* errno should have been set by res_init() in this case. */
@@ -334,12 +399,25 @@ res_send(buf, buflen, ans, anssiz)
 	terrno = ETIMEDOUT;
 	badns = 0;
 
+	if (dns_is_local_name((u_int8_t*)(buf + DNS_HEADER_SIZE))) {
+		multicast = 1;
+		v_circuit = 0;
+	} else {
+		multicast = 0;
+	}
+
+
 	/*
 	 * Send request, RETRY times, or until successful
 	 */
 	for (try = 0; try < _res.retry; try++) {
-	    for (ns = 0; ns < _res.nscount; ns++) {
-		struct sockaddr_in *nsap = &_res.nsaddr_list[ns];
+	    for (ns = 0; (multicast == 0 && ns < _res.nscount) ||
+	    		(multicast == 1 && ns < 1) ; ns++) {
+		struct sockaddr_in *nsap;
+		if (multicast == 0)
+			nsap = &_res.nsaddr_list[ns];
+		else
+			nsap = (struct sockaddr_in*)&mDNS_addr; /* const cast */
     same_ns:
 		if (badns & (1 << ns)) {
 			_res_close();
@@ -538,7 +616,7 @@ res_send(buf, buflen, ans, anssiz)
 			 * as we wish to receive answers from the first
 			 * server to respond.
 			 */
-			if (_res.nscount == 1 || (try == 0 && ns == 0)) {
+			if ((_res.nscount == 1 || (try == 0 && ns == 0)) && multicast == 0) {
 				/*
 				 * Connect only if we are sure we won't
 				 * receive a response from another server.
@@ -590,14 +668,63 @@ res_send(buf, buflen, ans, anssiz)
 					connected = 0;
 					errno = 0;
 				}
-				if (sendto(s, (char*)buf, buflen, 0,
-					   (struct sockaddr *)nsap,
-					   sizeof(struct sockaddr))
-				    != buflen) {
-					Aerror(stderr, "sendto", errno, *nsap);
-					badns |= (1 << ns);
-					_res_close();
-					goto next_ns;
+				
+				if (multicast) {
+					struct ifaddrs*	addrs;
+					struct ifaddrs*	curAddr;
+					const int twofivefive = 255;
+					
+					// multicast packets with TTL 255
+					if(setsockopt(s, IPPROTO_IP, IP_MULTICAST_TTL, &twofivefive, sizeof(twofivefive))) {
+						Perror(stderr, "setsocketopt - IP_MULTICAST_TTL", errno);
+						_res_close();
+						return (0);
+					}
+					
+					if (getifaddrs(&addrs) != 0)
+					{
+						Perror(stderr, "getifaddrs", errno);
+						_res_close();
+						return (0);
+					}
+					
+					/* multicast should send request on all multicast capable interfaces */
+					for (curAddr = addrs; curAddr != NULL; curAddr = curAddr->ifa_next) {
+						if ((curAddr->ifa_addr->sa_family) == AF_INET &&
+							(curAddr->ifa_flags & IFF_MULTICAST) != 0 &&
+							(curAddr->ifa_flags & IFF_POINTOPOINT) == 0) {
+							struct in_addr*	if_ip_addr = &((struct sockaddr_in*)curAddr->ifa_addr)->sin_addr;
+							
+							if (setsockopt(s, IPPROTO_IP, IP_MULTICAST_IF,
+								if_ip_addr, sizeof(*if_ip_addr)) != 0) {
+								freeifaddrs(addrs);
+								Perror(stderr, "setsocketopt - IP_MULTICAST_IF", errno);
+								_res_close();
+								return (0);
+							}
+							
+							if (sendto(s, (char*)buf, buflen, 0,
+								   (struct sockaddr *)nsap, sizeof *nsap) != buflen)
+							{
+								freeifaddrs(addrs);
+								Aerror(stderr, "sendto", errno, *nsap);
+								_res_close();
+								return (0);
+							}
+						}
+					}
+					
+					freeifaddrs(addrs);
+				} else {
+					if (sendto(s, (char*)buf, buflen, 0,
+						   (struct sockaddr *)nsap,
+						   sizeof(struct sockaddr))
+						!= buflen) {
+						Aerror(stderr, "sendto", errno, *nsap);
+						badns |= (1 << ns);
+						_res_close();
+						goto next_ns;
+					}
 				}
 			}
 
@@ -607,7 +734,7 @@ res_send(buf, buflen, ans, anssiz)
 			timeout.tv_sec = (_res.retrans << try);
 			if (try > 0)
 				timeout.tv_sec /= _res.nscount;
-			if ((long) timeout.tv_sec <= 0)
+			if ((long) timeout.tv_sec <= 0 || multicast)
 				timeout.tv_sec = 1;
 			timeout.tv_usec = 0;
     wait:
@@ -654,7 +781,7 @@ res_send(buf, buflen, ans, anssiz)
 			}
 #if CHECK_SRVR_ADDR
 			if (!(_res.options & RES_INSECURE1) &&
-			    !res_isourserver(&from)) {
+			    multicast == 0 && !res_isourserver(&from)) {
 				/*
 				 * response from wrong server? ignore it.
 				 * XXX - potential security hazard could
