@@ -77,7 +77,7 @@ static char *rcsid = "$Id: clnt_udp.c,v 1.4 2002/03/15 22:07:49 majka Exp $";
 extern int	bindresvport();
 extern bool_t	xdr_opaque_auth();
 
-__private_extern__ u_short pmap_getport_timeout(struct sockaddr_in *address, uint32_t program, uint32_t version, uint32_t protocol, struct timeval *timeout, struct timeval *totaltimeout);
+extern u_short pmap_getport_timeout(struct sockaddr_in *address, uint32_t program, uint32_t version, uint32_t protocol, struct timeval *timeout, struct timeval *totaltimeout);
 
 extern int errno;
 
@@ -135,7 +135,7 @@ struct cu_data {
  * sendsz and recvsz are the maximum allowable packet sizes that can be
  * sent and received.
  */
-__private_extern__ CLIENT *
+CLIENT *
 clntudp_bufcreate_timeout(struct sockaddr_in *raddr, uint32_t program, uint32_t version, int *sockp, uint32_t sendsz, uint32_t recvsz, struct timeval *retry_timeout, struct timeval *total_timeout)
 {
 	CLIENT *cl;
@@ -262,21 +262,21 @@ fooy:
 CLIENT *
 clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
 #ifdef __LP64__
-struct sockaddr_in *raddr;
-uint32_t program;
-uint32_t version;
-struct timeval wait;
-int *sockp;
-uint32_t sendsz;
-uint32_t recvsz;
+	struct sockaddr_in *raddr;
+	uint32_t program;
+	uint32_t version;
+	struct timeval wait;
+	int *sockp;
+	uint32_t sendsz;
+	uint32_t recvsz;
 #else
-struct sockaddr_in *raddr;
-u_long program;
-u_long version;
-struct timeval wait;
-register int *sockp;
-u_int sendsz;
-u_int recvsz;
+	struct sockaddr_in *raddr;
+	u_long program;
+	u_long version;
+	struct timeval wait;
+	register int *sockp;
+	u_int sendsz;
+	u_int recvsz;
 #endif
 {
 	return clntudp_bufcreate_timeout(raddr, (uint32_t)program, (uint32_t)version, sockp, (uint32_t)sendsz, (uint32_t)recvsz, &wait, NULL);
@@ -305,7 +305,11 @@ clntudp_create(raddr, program, version, wait, sockp)
 static enum clnt_stat 
 clntudp_call(cl, proc, xargs, argsp, xresults, resultsp, utimeout)
 	register CLIENT	*cl;		/* client handle */
+#ifdef __LP64__
+	uint32_t		proc;		/* procedure number */
+#else
 	u_long		proc;		/* procedure number */
+#endif
 	xdrproc_t	xargs;		/* xdr routine for args */
 	caddr_t		argsp;		/* pointer to args */
 	xdrproc_t	xresults;	/* xdr routine for results */
@@ -427,12 +431,15 @@ send_again:
 			cu->cu_error.re_errno = errno;
 			return (cu->cu_error.re_status = RPC_CANTRECV);
 		}
-		if (inlen < sizeof(u_long))
-			continue;	
-		/* see if reply transaction id matches sent id */
 #ifdef __LP64__
+		if (inlen < sizeof(uint32_t))
+			continue;
+		/* see if reply transaction id matches sent id */
 		if (*((uint32_t *)(cu->cu_inbuf)) != *((uint32_t *)(cu->cu_outbuf))) continue;
 #else
+		if (inlen < sizeof(u_long))
+			continue;
+		/* see if reply transaction id matches sent id */
 		if (*((u_long *)(cu->cu_inbuf)) != *((u_long *)(cu->cu_outbuf))) continue;
 #endif
 		/* we now assume we have the proper reply */
