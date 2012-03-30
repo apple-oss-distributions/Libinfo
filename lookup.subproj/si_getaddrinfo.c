@@ -61,6 +61,9 @@ static uint32_t net_v4_count = 0;
 static uint32_t net_v6_count = 0;	// includes 6to4 addresses
 static pthread_mutex_t net_config_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// Libc SPI
+int _inet_aton_check(const char *cp, struct in_addr *addr, int strict);
+
 typedef struct {
 	struct hostent host;
 	int alias_count;
@@ -613,7 +616,6 @@ static int
 _gai_numerichost(const char* nodename, uint32_t *family, int flags, struct in_addr *a4, struct in6_addr *a6, int *scope)
 {
 	int numerichost, passive;
-	in_addr_t test;
 
 	numerichost = 0;
 
@@ -645,12 +647,8 @@ _gai_numerichost(const char* nodename, uint32_t *family, int flags, struct in_ad
 		numerichost = inet_pton(AF_INET, nodename, a4);
 		if (numerichost == 0)
 		{
-			test = inet_addr(nodename);
-			if (test != (in_addr_t)-1)
-			{
-				a4->s_addr = test;
-				numerichost = 1;
-			}
+			/* inet_pton doesn't allow "a", "a.b", or "a.b.c" forms, so we re-check */
+			numerichost = _inet_aton_check(nodename, a4, 1);
 		}
 
 		if (numerichost == 1)
