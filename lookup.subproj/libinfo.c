@@ -41,6 +41,7 @@
 #include "netdb_async.h"
 #include <dispatch/dispatch.h>
 #include <mach-o/dyld_priv.h>
+#include <sys/stat.h>
 
 #define SOCK_UNSPEC 0
 #define IPPROTO_UNSPEC 0
@@ -191,8 +192,7 @@ getpwnam(const char *name)
 #ifdef CALL_TRACE
 	fprintf(stderr, "-> %s %s\n", __func__, name);
 #endif
-
-	item = si_user_byname(si_search(), name);
+    item = si_user_byname(si_search(), name);
 	LI_set_thread_item(CATEGORY_USER + 100, item);
 
 	if (item == NULL) return NULL;
@@ -233,12 +233,13 @@ struct passwd *
 getpwuid(uid_t uid)
 {
 	si_item_t *item;
-
+    
 #ifdef CALL_TRACE
 	fprintf(stderr, "-> %s %d\n", __func__, uid);
 #endif
-
-	item = si_user_byuid(si_search(), uid);
+    
+    
+    item = si_user_byuid(si_search(), uid);
 	LI_set_thread_item(CATEGORY_USER + 200, item);
 
 	if (item == NULL) return NULL;
@@ -658,7 +659,7 @@ getgrouplist_internal(const char *name, int basegid, gid_t *groups, uint32_t *ng
 	groups[0] = basegid;
 	*ngroups = 1;
 
-	item = si_grouplist(si_search(), name, max);
+	item = si_grouplist(si_search(), name, max+1);
 	LI_set_thread_item(CATEGORY_GROUPLIST, item);
 	if (item == NULL) return 0;
 
@@ -3139,7 +3140,7 @@ getpwnam_r(const char *name, struct passwd *pw, char *buffer, size_t bufsize, st
 	if (result != NULL) *result = NULL;
 
 	if ((pw == NULL) || (buffer == NULL) || (result == NULL) || (bufsize == 0)) return ERANGE;
-
+    
 	item = si_user_byname(si_search(), name);
 	if (item == NULL) return 0;
 
@@ -3160,6 +3161,7 @@ getpwuid_r(uid_t uid, struct passwd *pw, char *buffer, size_t bufsize, struct pa
 	si_item_t *item;
 	struct passwd *p;
 	int status;
+    uid_t localuid = uid;
 
 #ifdef CALL_TRACE
 	fprintf(stderr, "-> %s %d\n", __func__, uid);
@@ -3168,8 +3170,8 @@ getpwuid_r(uid_t uid, struct passwd *pw, char *buffer, size_t bufsize, struct pa
 	if (result != NULL) *result = NULL;
 
 	if ((pw == NULL) || (buffer == NULL) || (result == NULL) || (bufsize == 0)) return ERANGE;
-
-	item = si_user_byuid(si_search(), uid);
+    
+	item = si_user_byuid(si_search(), localuid);
 	if (item == NULL) return 0;
 
 	p = (struct passwd *)((uintptr_t)item + sizeof(si_item_t));
